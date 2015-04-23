@@ -12,38 +12,39 @@ namespace multidb
 {
     public partial class frmPrincipal : Form
     {
-        Iconnection conn = null;
 
         public frmPrincipal()
         {
             InitializeComponent();
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            conn = clMySql.getInstance();
-            MessageBox.Show(conn.getConnection().ConnectionString);
+            
             try
             {
-                conn.Open();
-                MessageBox.Show("Conectado com sucesso");
+                var cmd = clCommand<clMySql>.Command("Select * from tbperson");
+                var dt = new DataTable();
+                dt.Load(cmd.ExecuteReader());
+                dgvmssql.DataSource = dt;
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Erro ao connectar");
             }
-            
-
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            conn = clMsSql.getInstance();
-            MessageBox.Show(conn.getConnection().ConnectionString);
+            
             try
             {
-                conn.Open();
-                MessageBox.Show("Conectado com sucesso");
+                var cmd = clCommand<clMsSql>.Command("Select * from tbperson");
+                var dt = new DataTable();
+                dt.Load(cmd.ExecuteReader());
+                dgvmysql.DataSource = dt;
             }
             catch (Exception ex)
             {
