@@ -12,7 +12,6 @@ namespace multidb
 {
     public partial class frmPrincipal : Form
     {
-
         public frmPrincipal()
         {
             InitializeComponent();
@@ -24,7 +23,7 @@ namespace multidb
             
             try
             {
-                var cmd = clCommand<clMySql>.Command("Select * from tbperson");
+                var cmd = clCommand.Command(DBName.MsSql, "Select * from tbperson");
                 var dt = new DataTable();
                 dt.Load(cmd.ExecuteReader());
                 dgvmssql.DataSource = dt;
@@ -41,7 +40,7 @@ namespace multidb
             
             try
             {
-                var cmd = clCommand<clMsSql>.Command("Select * from tbperson");
+                var cmd = clCommand.Command(DBName.MySql, "Select * from tbperson");
                 var dt = new DataTable();
                 dt.Load(cmd.ExecuteReader());
                 dgvmysql.DataSource = dt;
@@ -50,6 +49,11 @@ namespace multidb
             {
                 MessageBox.Show("Erro ao connectar");
             }
+        }
+
+        private void dgvmysql_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }

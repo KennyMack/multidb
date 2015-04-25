@@ -9,8 +9,18 @@ namespace multidb
 {
     interface Iconnection
     {
-        void Open();
+        bool Open();
+        bool Close();
+        bool Close(bool commit);
+        DbTransaction getTransaction();
         DbConnection getConnection();
+        DbConnection getConnection(clTranState.transactionState transaction);
+        bool Commit();
+        bool Commit(bool close);
+        bool RollBack();
+        bool RollBack(bool close);
+        void Dispose();
+
     }
 
 }

@@ -9,41 +9,103 @@ using System.Threading.Tasks;
 
 namespace multidb
 {
-    public static class clCommand<T>
+    public static class clCommand
     {
-        static Iconnection conn = null;
-
-        public static DbCommand Command(string sql)
+        private static Iconnection conn = null;
+        private static DbCommand cmd = null;
+        private static Iconnection getConnection(string database)
         {            
-            DbCommand cmd = null;
-            if (typeof(T) == typeof(clMySql))
+            if (DBName.MySql == database)
             {
                 conn = clMySql.getInstance();
-                conn.Open();
-                cmd = new MySqlCommand();
-                cmd.Connection = conn.getConnection();
-                cmd.CommandText = sql;
-                cmd.CommandType = System.Data.CommandType.Text;
             }
-            else if (typeof(T) == typeof(clMsSql))
+            else if (DBName.MsSql == database)
             {
                 conn = clMsSql.getInstance();
-                conn.Open();
+            }
+            return conn;
+        }
+
+        private static DbCommand getCommand(string database)
+        {
+            
+            if (DBName.MySql == database)
+            {
+                cmd = new MySqlCommand();
+            }
+            else if (DBName.MsSql == database)
+            {
                 cmd = new SqlCommand();
-                cmd.Connection = conn.getConnection();
-                cmd.CommandText = sql;
-                cmd.CommandType = System.Data.CommandType.Text;
             }
             return cmd;
         }
-    }
-    
-    /*public class dbType
-    {
-        public string type { get; private set; }
-        public dbType(string ptype)
+
+        private static void setDefault(DbTransaction tran = null, System.Data.CommandType type = System.Data.CommandType.Text)
         {
-            this.type = ptype;
+            cmd.Connection = conn.getConnection();
+            cmd.Transaction = tran;
+            cmd.CommandType = type;
         }
-    }*/
+
+        public static DbCommand Command(string database, string sql)
+        {       
+            conn = clCommand.getConnection(database);
+            cmd = clCommand.getCommand(database);
+            setDefault();
+            cmd.CommandText = sql;
+            
+            conn.Open();
+            return cmd;
+        }
+
+        public static DbCommand Command(string database, string sql, System.Data.CommandType type)
+        {
+            conn = clCommand.getConnection(database);
+            cmd = clCommand.getCommand(database);
+            setDefault(null, type);
+            cmd.CommandText = sql;
+
+            conn.Open();
+            return cmd;
+        }
+        public static DbCommand Command(string database, string sql, DbTransaction tran)
+        {
+            conn = clCommand.getConnection(database);
+            cmd = clCommand.getCommand(database);
+            setDefault(tran);
+            cmd.CommandText = sql;
+
+            conn.Open();
+            return cmd;
+        }
+
+        public static DbCommand Command(string database, string sql, DbTransaction tran, System.Data.CommandType type)
+        {
+            conn = clCommand.getConnection(database);
+            cmd = clCommand.getCommand(database);
+            setDefault(tran, type);
+            cmd.CommandText = sql;
+
+            conn.Open();
+            return cmd;
+        }
+    }
+    public static class DBName
+    {
+        public static string MySql
+        {
+            get
+            {
+                return "MySql";
+            }
+        }
+        public static string MsSql
+        {
+            get
+            {
+                return "MsSql";
+            }
+        }
+    
+    }
 }

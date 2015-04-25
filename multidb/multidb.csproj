@@ -48,6 +48,7 @@
     <Compile Include="clCommand.cs" />
     <Compile Include="clMsSql.cs" />
     <Compile Include="clMySql.cs" />
+    <Compile Include="clTranState.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
