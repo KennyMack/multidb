@@ -6,95 +6,24 @@ using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Data.Common;
+
 namespace multidb
 {
     public class clMySql : Iconnection
     {
+        #region Properties
         private MySqlConnectionStringBuilder _StrSql;
         private MySqlConnection _conn;
-        private MySqlTransaction _transac = null;
-
-        public DbConnection getConnection()
-        {
-            return this._conn;
-        }
-
-        public DbConnection getConnection(clTranState.transactionState transaction)
-        {
-            if (transaction == clTranState.transactionState.start)
-                this.beginTransaction();
-            return this.getConnection();
-        }
-
-        public DbTransaction getTransaction()
-        {
-            if (this._transac != null)
-                return this._transac;
-            else
-            {
-                this.beginTransaction();
-                return this._transac;
-            }
-        }
-        
-        public void beginTransaction()
-        {
-            this._transac = this._conn.BeginTransaction();
-        }
-
-        public bool Commit()
-        {
-            try
-            {
-                if (this._transac != null)
-                    this._transac.Commit();
-                this._transac = null;
-            }
-            catch (MySqlException ex)
-            {
-                System.Windows.Forms.MessageBox.Show(string.Format("Commit failed\r\nError cod.:{0}\r\nMessage:{1}", ex.ErrorCode, ex.Message));
-                return false;
-            }
-            return true;
-        }
-
-        public bool Commit(bool close)
-        {
-            if (this.Commit() &&
-                this.Close())
-                return true;
-            else
-                return false;
-        }
-
-        public bool RollBack()
-        {
-            try
-            {
-                if (this._transac != null)
-                    this._transac.Rollback();
-                this._transac = null;
-            }
-            catch (MySqlException ex)
-            {
-                System.Windows.Forms.MessageBox.Show(string.Format("RollBack failed\r\nError cod.:{0}\r\nMessage:{1}", ex.ErrorCode, ex.Message));
-                return false;
-            }
-            return true;
-        }
-
-        public bool RollBack(bool close)
-        {
-            if (this.RollBack() &&
-                this.Close())
-                return true;
-            else
-                return false;
-        }
-
+        private clManageConn _manage = null;
+        private clManageTran _tranmanage = null;
+        #endregion        
 
         #region Instance
         private static clMySql _Instance = null;
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
+        /// <returns></returns>
         public static clMySql getInstance()
         {
             if (_Instance == null)
@@ -104,6 +33,9 @@ namespace multidb
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Class constructor
+        /// </summary>
         private clMySql()
         {
             this._conn = new MySqlConnection();
@@ -114,107 +46,151 @@ namespace multidb
             this._StrSql.UserID = "root";
             this._StrSql.Port = 3306;
             this._conn.ConnectionString = this._StrSql.ToString();
+            this._manage = new clManageConn(this._conn);
+            this._tranmanage = new clManageTran(this._conn);
+        }
+        #endregion   
+
+        #region Returns connection
+        /// <summary>
+        /// Returns connection to instance
+        /// </summary>
+        /// <returns>DbConnection</returns>
+        public DbConnection getConnection()
+        {
+            return this._conn;
         }
         #endregion
-        
-        private bool connState(System.Data.ConnectionState State)
-        {
-            var ret = false;
-            if (State == System.Data.ConnectionState.Open)
-            {
-                switch (this._conn.State)
-                {
-                    case System.Data.ConnectionState.Broken:
-                        ret = true;
-                        break;
-                    case System.Data.ConnectionState.Closed:
-                        ret = true;
-                        break;
-                    case System.Data.ConnectionState.Connecting:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Executing:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Fetching:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Open:
-                        ret = false;
-                        break;
-                }
-            }
-            else
-            {
-                switch (this._conn.State)
-                {
-                    case System.Data.ConnectionState.Broken:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Closed:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Connecting:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Executing:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Fetching:
-                        ret = false;
-                        break;
-                    case System.Data.ConnectionState.Open:
-                        ret = true;
-                        break;
-                }
-            }
-            return ret;
-        }
 
+        #region Returns connection with aditional option creates a transaction
+        /// <summary>
+        /// Returns connection with aditional option creates a transaction
+        /// </summary>
+        /// <param name="transaction">Option to creates transaction</param>
+        /// <returns>DbConnection</returns>
+        public DbConnection getConnection(clTranState.transactionState transaction)
+        {
+            if (transaction == clTranState.transactionState.start)
+                this.beginTransaction();
+            return this.getConnection();
+        }
+        #endregion
+
+        #region Open Connection
+        /// <summary>
+        /// Open connection with bd
+        /// </summary>
+        /// <returns>bool</returns>
         public bool Open()
         {
-            try
-            {
-                if (this.connState(System.Data.ConnectionState.Open))
-                    this._conn.Open();
-                return true;
-            }
-            catch (MySqlException ex)
-            {
-                System.Windows.Forms.MessageBox.Show(string.Format("Connection failed\r\nError cod.:{0}\r\nMessage:{1}", ex.ErrorCode, ex.Message));
-                return false;
-            }
-            
+            return this._manage.Open();
         }
+        #endregion
 
+        #region Close Connection
+        /// <summary>
+        /// Close connection with bd
+        /// </summary>
+        /// <returns>bool</returns>
         public bool Close()
         {
-            try
-            {
-                if (this.connState(System.Data.ConnectionState.Closed))
-                    this._conn.Close();
-                return true;
-            }
-            catch (MySqlException ex)
-            {
-                System.Windows.Forms.MessageBox.Show(string.Format("Connection failed\r\nError cod.:{0}\r\nMessage:{1}", ex.ErrorCode, ex.Message));
-                return false;
-            }
+            return this._manage.Close();
         }
+        #endregion
 
+        #region Close connection and optionaly commit the current transaction
+        /// <summary>
+        /// Close connection and optionaly commit the current transaction
+        /// </summary>
+        /// <param name="commit">Commit Current Transaction</param>
+        /// <returns></returns>
         public bool Close(bool commit)
         {
-            return this.Commit(true);
+            if (commit)
+                return this.Commit(true);
+            else
+                return this.RollBack(true);
         }
+        #endregion
 
+        #region Return current transaction
+        /// <summary>
+        /// Return current transaction
+        /// </summary>
+        /// <returns>DbTransaction</returns>
+        public DbTransaction getTransaction()
+        {
+            this._manage.Open();
+            return this._tranmanage.getTransaction();
+        }
+        #endregion
+
+        #region Start a new db Transaction
+        /// <summary>
+        /// Start a new db transaction
+        /// </summary>
+        public void beginTransaction()
+        {
+            this._tranmanage.beginTransaction();
+        }
+        #endregion
+
+        #region Commit the current transaction
+        /// <summary>
+        /// Commit the current transaction
+        /// </summary>
+        /// <returns>bool</returns>
+        public bool Commit()
+        {
+            return this._tranmanage.Commit();
+        }
+        #endregion       
+
+        #region Commit the current transaction and close connection
+        /// <summary>
+        /// Commit the current transaction and optionaly close connection
+        /// </summary>
+        /// <param name="close">Close connection</param>
+        /// <returns>bool</returns>
+        public bool Commit(bool close)
+        {
+            return (this.Commit() && (close ? this.Close() : true));
+        }
+        #endregion        
+
+        #region Rollback the current transaction
+        /// <summary>
+        /// Rollback the current transaction
+        /// </summary>
+        /// <returns>bool</returns>
+        public bool RollBack()
+        {
+            return this._tranmanage.RollBack();
+        }
+        #endregion
+
+        #region Rollback the current transaction and optionaly close connection
+        /// <summary>
+        /// Rollback the current transaction and optionaly close connection
+        /// </summary>
+        /// <param name="close">close connection</param>
+        /// <returns>bool</returns>
+        public bool RollBack(bool close)
+        {
+            return (this.RollBack() && (close ? this.Close() : true));
+        }
+        #endregion
+
+        #region Dispose the current connection instance
+        /// <summary>
+        /// Dispose the current connection instance
+        /// </summary>
         public void Dispose()
         {
             this.RollBack(true);
             if (_Instance != null)
                 _Instance = null;
         }
-
-       
-    
+        #endregion
     }
 }

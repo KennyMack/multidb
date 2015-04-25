@@ -15,11 +15,11 @@ namespace multidb
         private static DbCommand cmd = null;
         private static Iconnection getConnection(string database)
         {            
-            if (DBName.MySql == database)
+            if (clDbTypes.MySql == database)
             {
                 conn = clMySql.getInstance();
             }
-            else if (DBName.MsSql == database)
+            else if (clDbTypes.MsSql == database)
             {
                 conn = clMsSql.getInstance();
             }
@@ -28,12 +28,12 @@ namespace multidb
 
         private static DbCommand getCommand(string database)
         {
-            
-            if (DBName.MySql == database)
+
+            if (clDbTypes.MySql == database)
             {
                 cmd = new MySqlCommand();
             }
-            else if (DBName.MsSql == database)
+            else if (clDbTypes.MsSql == database)
             {
                 cmd = new SqlCommand();
             }
@@ -90,22 +90,5 @@ namespace multidb
             return cmd;
         }
     }
-    public static class DBName
-    {
-        public static string MySql
-        {
-            get
-            {
-                return "MySql";
-            }
-        }
-        public static string MsSql
-        {
-            get
-            {
-                return "MsSql";
-            }
-        }
     
-    }
 }

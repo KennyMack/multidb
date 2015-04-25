@@ -23,7 +23,7 @@ namespace multidb
             
             try
             {
-                var cmd = clCommand.Command(DBName.MsSql, "Select * from tbperson");
+                var cmd = clCommand.Command(clDbTypes.MsSql, "Select * from tbperson");
                 var dt = new DataTable();
                 dt.Load(cmd.ExecuteReader());
                 dgvmssql.DataSource = dt;
@@ -40,7 +40,7 @@ namespace multidb
             
             try
             {
-                var cmd = clCommand.Command(DBName.MySql, "Select * from tbperson");
+                var cmd = clCommand.Command(clDbTypes.MySql, "Select * from tbperson");
                 var dt = new DataTable();
                 dt.Load(cmd.ExecuteReader());
                 dgvmysql.DataSource = dt;

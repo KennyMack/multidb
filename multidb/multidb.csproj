@@ -46,6 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="clCommand.cs" />
+    <Compile Include="clDbTypes.cs" />
+    <Compile Include="clManageConn.cs" />
+    <Compile Include="clManageTran.cs" />
     <Compile Include="clMsSql.cs" />
     <Compile Include="clMySql.cs" />
     <Compile Include="clTranState.cs" />
